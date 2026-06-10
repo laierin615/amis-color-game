@@ -346,6 +346,13 @@
       gap: 14px;
     }
 
+    .choice-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 52px;
+      gap: 9px;
+      align-items: stretch;
+    }
+
     .choice {
       min-height: 92px;
       padding: 14px;
@@ -400,6 +407,40 @@
       font-size: 14px;
       line-height: 1.25;
       font-weight: 800;
+    }
+
+    .sound-button {
+      min-width: 46px;
+      min-height: 46px;
+      border: 2px solid var(--ink);
+      background: var(--yellow);
+      color: var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      display: grid;
+      place-items: center;
+      font-size: 21px;
+      font-weight: 950;
+      line-height: 1;
+      transition: transform 130ms ease, box-shadow 130ms ease, opacity 130ms ease;
+    }
+
+    .sound-button::before {
+      content: "♪";
+    }
+
+    .sound-button:hover,
+    .sound-button:focus-visible {
+      transform: translate(-1px, -1px);
+      box-shadow: 5px 5px 0 var(--ink);
+      outline: 3px solid rgba(47, 104, 184, 0.28);
+      outline-offset: 2px;
+    }
+
+    .sound-button[disabled] {
+      cursor: not-allowed;
+      opacity: 0.35;
+      filter: grayscale(1);
+      transform: none;
     }
 
     .spell-area {
@@ -514,7 +555,7 @@
 
     .mini-card {
       display: grid;
-      grid-template-columns: 38px 1fr;
+      grid-template-columns: 38px 1fr auto;
       gap: 10px;
       align-items: center;
       padding: 10px;
@@ -630,6 +671,10 @@
         grid-template-columns: 1fr;
       }
 
+      .choice-wrap {
+        grid-template-columns: minmax(0, 1fr) 48px;
+      }
+
       .stage-footer {
         grid-template-columns: 1fr;
       }
@@ -689,7 +734,7 @@
         <figure class="lesson-image">
           <img src="assets/color-practice.png" alt="附件課堂色卡">
         </figure>
-        <p class="note">詞彙依附件教案與課堂色卡整理；實際發音以授課教師與族語老師示範為準。</p>
+        <p class="note">聲音來源：原住民族語E樂園（財團法人原住民族語言研究發展基金會）海岸阿美語學習詞表，依 CC BY-NC-SA 4.0 非商業教學使用；實際發音以授課教師與族語老師示範為準。</p>
       </aside>
     </main>
   </div>
@@ -701,6 +746,7 @@
         zh: "紅色",
         hex: "#d94638",
         meaning: "熱情、活力、生命力",
+        audio: "assets/audio/kahengangay.wav",
         chunks: ["ka", "hen", "gan", "gay"]
       },
       {
@@ -708,6 +754,7 @@
         zh: "黃色",
         hex: "#f1c84b",
         meaning: "陽光、豐收",
+        audio: "assets/audio/kaliyalaway.wav",
         chunks: ["ka", "li", "ya", "la", "way"]
       },
       {
@@ -715,6 +762,7 @@
         zh: "白色",
         hex: "#f7f3e9",
         meaning: "課堂色卡詞",
+        audio: "assets/audio/kohecalay.wav",
         chunks: ["ko", "he", "ca", "lay"]
       },
       {
@@ -729,6 +777,7 @@
         zh: "綠色",
         hex: "#59bb67",
         meaning: "課堂色卡詞",
+        audio: "assets/audio/kandaway.wav",
         chunks: ["kan", "da", "way"]
       },
       {
@@ -736,6 +785,7 @@
         zh: "黑色",
         hex: "#33312d",
         meaning: "課堂色卡詞",
+        audio: "assets/audio/kohetingay.wav",
         chunks: ["ko", "he", "tin", "gay"]
       }
     ];
@@ -846,10 +896,26 @@
           <span class="swatch" style="--swatch:${item.hex}" aria-hidden="true"></span>
           <div>
             <strong>${item.key}</strong>
-            <span>${item.zh}｜${item.meaning}</span>
+            <span>${item.zh}｜${item.meaning}${item.audio ? "" : "｜暫無 Klokah 音檔"}</span>
           </div>
+          ${soundButtonMarkup(item.key)}
         </div>
       `).join("");
+    }
+
+    function soundButtonMarkup(key) {
+      const item = byKey(key);
+      const label = item?.audio ? `播放 ${item.key}，${item.zh}` : `${item?.key || key} 暫無音檔`;
+      return `<button class="sound-button" type="button" data-sound="${key}" aria-label="${label}" title="${label}" ${item?.audio ? "" : "disabled"}></button>`;
+    }
+
+    function playColorAudio(key) {
+      const item = byKey(key);
+      if (!item?.audio) return;
+      const audio = new Audio(item.audio);
+      audio.play().catch(() => {
+        setFeedback("瀏覽器暫時擋住自動播放，請點喇叭按鈕再聽一次。", "warn");
+      });
     }
 
     function setFeedback(text, tone = "neutral") {
@@ -895,13 +961,16 @@
       return `
         <div class="choices">
           ${choices.map((item) => `
-            <button class="choice" type="button" data-answer="${item.key}">
-              <span class="swatch" style="--swatch:${item.hex}" aria-hidden="true"></span>
-              <span>
-                <strong>${item.key}</strong>
-                <span>${item.zh}</span>
-              </span>
-            </button>
+            <div class="choice-wrap">
+              <button class="choice" type="button" data-answer="${item.key}">
+                <span class="swatch" style="--swatch:${item.hex}" aria-hidden="true"></span>
+                <span>
+                  <strong>${item.key}</strong>
+                  <span>${item.zh}</span>
+                </span>
+              </button>
+              ${soundButtonMarkup(item.key)}
+            </div>
           `).join("")}
         </div>
       `;
@@ -975,7 +1044,7 @@
             const target = question.answer;
             if (state.spellPicked.length === question.chunks.length) {
               if (joined === target) {
-                markCorrect();
+                markCorrect(question.color || question.answer);
               } else {
                 setFeedback("族語順序再調整一次。", "warn");
                 window.setTimeout(() => renderQuestion(), 750);
@@ -992,7 +1061,7 @@
           const correct = button.dataset.answer === question.answer;
           if (correct) {
             button.classList.add("is-correct");
-            markCorrect();
+            markCorrect(question.answer);
           } else {
             button.classList.add("is-wrong");
             state.streak = 0;
@@ -1002,11 +1071,12 @@
       });
     }
 
-    function markCorrect() {
+    function markCorrect(audioKey) {
       state.locked = true;
       state.streak += 1;
       state.score += 10 + Math.min(state.streak, 3) * 2;
       setFeedback(state.streak >= 3 ? "連續答對，色彩密碼打開了！" : "答對了，先讀族語再到下一題。", "good");
+      playColorAudio(audioKey);
       updateStatus();
       window.setTimeout(() => nextQuestion(), 900);
     }
@@ -1050,6 +1120,14 @@
         });
         startGame();
       });
+    });
+
+    document.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-sound]");
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      playColorAudio(button.dataset.sound);
     });
 
     nextBtn.addEventListener("click", () => {
