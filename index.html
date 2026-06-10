@@ -301,7 +301,9 @@
       font-size: clamp(30px, 4vw, 52px);
       line-height: 1;
       font-weight: 950;
-      overflow-wrap: anywhere;
+      white-space: nowrap;
+      word-break: keep-all;
+      overflow-wrap: normal;
     }
 
     .word-preview .zh {
@@ -344,13 +346,6 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
-    }
-
-    .choice-wrap {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 52px;
-      gap: 9px;
-      align-items: stretch;
     }
 
     .choice {
@@ -397,7 +392,9 @@
       font-size: 20px;
       line-height: 1.05;
       font-weight: 950;
-      overflow-wrap: anywhere;
+      white-space: nowrap;
+      word-break: keep-all;
+      overflow-wrap: normal;
     }
 
     .choice span {
@@ -567,7 +564,9 @@
       display: block;
       line-height: 1.1;
       font-weight: 950;
-      overflow-wrap: anywhere;
+      white-space: nowrap;
+      word-break: keep-all;
+      overflow-wrap: normal;
     }
 
     .mini-card span {
@@ -669,10 +668,6 @@
 
       .choices {
         grid-template-columns: 1fr;
-      }
-
-      .choice-wrap {
-        grid-template-columns: minmax(0, 1fr) 48px;
       }
 
       .stage-footer {
@@ -961,16 +956,13 @@
       return `
         <div class="choices">
           ${choices.map((item) => `
-            <div class="choice-wrap">
-              <button class="choice" type="button" data-answer="${item.key}">
-                <span class="swatch" style="--swatch:${item.hex}" aria-hidden="true"></span>
-                <span>
-                  <strong>${item.key}</strong>
-                  <span>${item.zh}</span>
-                </span>
-              </button>
-              ${soundButtonMarkup(item.key)}
-            </div>
+            <button class="choice" type="button" data-answer="${item.key}">
+              <span class="swatch" style="--swatch:${item.hex}" aria-hidden="true"></span>
+              <span>
+                <strong>${item.key}</strong>
+                <span>${item.zh}</span>
+              </span>
+            </button>
           `).join("")}
         </div>
       `;
@@ -1058,10 +1050,11 @@
       stage.querySelectorAll(".choice").forEach((button) => {
         button.addEventListener("click", () => {
           if (state.locked) return;
+          playColorAudio(button.dataset.answer);
           const correct = button.dataset.answer === question.answer;
           if (correct) {
             button.classList.add("is-correct");
-            markCorrect(question.answer);
+            markCorrect(null);
           } else {
             button.classList.add("is-wrong");
             state.streak = 0;
