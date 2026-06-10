@@ -504,6 +504,14 @@
       font-weight: 950;
     }
 
+    .vocab h2 small {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+    }
+
     .mini-card {
       display: grid;
       grid-template-columns: 38px 1fr;
@@ -646,8 +654,8 @@
       <div class="brand">
         <div class="brand-mark" aria-hidden="true"></div>
         <div>
-          <h1>阿美族色彩密碼</h1>
-          <p>kahengangay、kaliyalaway、hana</p>
+          <h1>kahengangay · kaliyalaway</h1>
+          <p>阿美族色彩密碼｜hana（花）</p>
         </div>
       </div>
       <div class="status" aria-label="遊戲狀態">
@@ -667,7 +675,7 @@
         </div>
         <div class="question" id="gameStage"></div>
         <footer class="stage-footer">
-          <div class="feedback" id="feedback">先看題目，再選色彩。</div>
+          <div class="feedback" id="feedback">先看族語，再看中文提示。</div>
           <div class="actions">
             <button class="action" type="button" id="resetBtn">重新開始</button>
             <button class="action primary" type="button" id="nextBtn">下一題</button>
@@ -676,7 +684,7 @@
       </section>
 
       <aside class="vocab" aria-label="色彩詞彙表">
-        <h2>課堂色彩詞</h2>
+        <h2>kahengangay / kaliyalaway <small>課堂色彩詞</small></h2>
         <div id="vocabList"></div>
         <figure class="lesson-image">
           <img src="assets/color-practice.png" alt="附件課堂色卡">
@@ -783,37 +791,47 @@
       const colorPick = activeColors.map((item) => ({
         type: "pickColor",
         answer: item.key,
-        title: `${item.key} 是哪個顏色？`,
-        sub: item.zh,
+        title: item.key,
+        sub: `${item.zh}｜選出對應色塊`,
+        previewPrimary: item.key,
+        previewSecondary: item.zh,
         choices: shuffle(activeColors).map((choice) => choice.key)
       }));
       const wordPick = activeColors.slice(0, mode === "basic" ? 2 : 4).map((item) => ({
         type: "pickWord",
         answer: item.key,
-        title: `看到 ${item.zh}，選出族語詞。`,
-        sub: item.meaning,
+        title: "hana",
+        sub: `${item.zh}｜看花的顏色，選出族語詞`,
+        previewPrimary: "hana",
+        previewSecondary: `${item.zh} 的花｜${item.meaning}`,
         choices: shuffle(activeColors).map((choice) => choice.key)
       }));
       const phrasePick = flowerPhrases.map((item) => ({
         type: "pickFlower",
         answer: item.color,
-        title: `${item.phrase}`,
-        sub: item.zh,
+        title: item.phrase,
+        sub: `${item.zh}｜選出花的顏色`,
+        previewPrimary: item.phrase,
+        previewSecondary: item.zh,
         choices: activeKeys
       }));
       const spell = [
         ...activeColors.slice(0, mode === "basic" ? 2 : 3).map((item) => ({
           type: "spell",
           answer: item.key,
-          title: `排出 ${item.zh} 的族語詞`,
-          sub: item.key,
+          title: item.key,
+          sub: `${item.zh}｜排出音節`,
+          previewPrimary: item.key,
+          previewSecondary: item.zh,
           chunks: item.chunks
         })),
         ...flowerPhrases.map((item) => ({
           type: "spell",
           answer: item.phrase.replaceAll(" ", ""),
-          title: `排出：${item.zh}`,
-          sub: item.phrase,
+          title: item.phrase,
+          sub: `${item.zh}｜排出句型`,
+          previewPrimary: item.phrase,
+          previewSecondary: item.zh,
           color: item.color,
           chunks: item.chunks
         }))
@@ -880,8 +898,8 @@
             <button class="choice" type="button" data-answer="${item.key}">
               <span class="swatch" style="--swatch:${item.hex}" aria-hidden="true"></span>
               <span>
-                <strong>${question.type === "pickColor" || question.type === "pickFlower" ? item.zh : item.key}</strong>
-                <span>${question.type === "pickColor" || question.type === "pickFlower" ? item.key : item.zh}</span>
+                <strong>${item.key}</strong>
+                <span>${item.zh}</span>
               </span>
             </button>
           `).join("")}
@@ -914,7 +932,6 @@
       const question = state.questions[state.index];
       const isFlower = question.type === "pickFlower";
       const previewColor = question.type === "pickWord" ? question.answer : (isFlower ? question.answer : null);
-      const previewWord = question.type === "pickColor" ? question.answer : null;
       const visualKey = previewColor || question.color || (byKey(question.answer) ? question.answer : "kahengangay");
       const visual = question.type === "pickColor" ? mysteryMarkup(question.answer) : flowerMarkup(visualKey);
 
@@ -930,14 +947,14 @@
         <div class="visual-zone">
           ${visual}
           <div class="word-preview">
-            <div class="amis">${previewWord || question.sub}</div>
-            <div class="zh">${question.type === "spell" ? "把音節排成正確順序" : "選出正確答案"}</div>
+            <div class="amis">${question.previewPrimary || question.title}</div>
+            <div class="zh">${question.previewSecondary || question.sub}</div>
           </div>
         </div>
         ${question.type === "spell" ? renderSpell(question) : renderChoices(question)}
       `;
 
-      setFeedback(question.type === "spell" ? "點音節排順序。" : "選一個答案。");
+      setFeedback(question.type === "spell" ? "先讀族語，再點音節排順序。" : "先讀族語，再選答案。");
       bindQuestion(question);
       updateStatus();
     }
@@ -960,7 +977,7 @@
               if (joined === target) {
                 markCorrect();
               } else {
-                setFeedback("順序還可以再調整一次。", "warn");
+                setFeedback("族語順序再調整一次。", "warn");
                 window.setTimeout(() => renderQuestion(), 750);
               }
             }
@@ -979,7 +996,7 @@
           } else {
             button.classList.add("is-wrong");
             state.streak = 0;
-            setFeedback("再看一次顏色和字，就差一點。", "warn");
+            setFeedback("再看一次族語和中文提示，就差一點。", "warn");
           }
         });
       });
@@ -989,7 +1006,7 @@
       state.locked = true;
       state.streak += 1;
       state.score += 10 + Math.min(state.streak, 3) * 2;
-      setFeedback(state.streak >= 3 ? "連續答對，色彩密碼打開了！" : "答對了，讀一次再到下一題。", "good");
+      setFeedback(state.streak >= 3 ? "連續答對，色彩密碼打開了！" : "答對了，先讀族語再到下一題。", "good");
       updateStatus();
       window.setTimeout(() => nextQuestion(), 900);
     }
@@ -1006,8 +1023,8 @@
       roundBox.textContent = `${state.questions.length} / ${state.questions.length}`;
       stage.innerHTML = `
         <div class="complete">
-          <h2>完成色彩密碼</h2>
-          <p>你已練習阿美族色彩詞與花的句型。最後大聲念：kahengangay a hana、kaliyalaway a hana。</p>
+          <h2>kahengangay a hana</h2>
+          <p>完成色彩密碼。最後大聲念：kahengangay a hana、kaliyalaway a hana。</p>
           <button class="action" type="button" id="playAgain">再玩一次</button>
         </div>
       `;
