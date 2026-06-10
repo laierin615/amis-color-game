@@ -820,6 +820,7 @@
     const nextBtn = document.querySelector("#nextBtn");
     const resetBtn = document.querySelector("#resetBtn");
     const vocabList = document.querySelector("#vocabList");
+    const audioPool = new Map();
 
     function shuffle(items) {
       const copy = [...items];
@@ -904,13 +905,42 @@
       return `<button class="sound-button" type="button" data-sound="${key}" aria-label="${label}" title="${label}" ${item?.audio ? "" : "disabled"}></button>`;
     }
 
-    function playColorAudio(key) {
+    function getColorAudio(key) {
       const item = byKey(key);
-      if (!item?.audio) return;
-      const audio = new Audio(item.audio);
+      if (!item?.audio) return null;
+      if (!audioPool.has(key)) {
+        const audio = new Audio();
+        audio.preload = "auto";
+        audio.src = item.audio;
+        audio.load();
+        audioPool.set(key, audio);
+      }
+      return audioPool.get(key);
+    }
+
+    function preloadColorAudio() {
+      colors.forEach((item) => getColorAudio(item.key));
+    }
+
+    function playColorAudio(key) {
+      const audio = getColorAudio(key);
+      if (!audio) return;
+      audio.pause();
+      audio.currentTime = 0;
       audio.play().catch(() => {
         setFeedback("瀏覽器暫時擋住自動播放，請點喇叭按鈕再聽一次。", "warn");
       });
+    }
+
+    function playOnceFromButton(button, key) {
+      if (!key || button.dataset.playingKey === key) return;
+      button.dataset.playingKey = key;
+      playColorAudio(key);
+      window.setTimeout(() => {
+        if (button.dataset.playingKey === key) {
+          delete button.dataset.playingKey;
+        }
+      }, 450);
     }
 
     function setFeedback(text, tone = "neutral") {
@@ -1048,9 +1078,14 @@
       }
 
       stage.querySelectorAll(".choice").forEach((button) => {
+        button.addEventListener("pointerdown", () => {
+          if (state.locked) return;
+          playOnceFromButton(button, button.dataset.answer);
+        });
+
         button.addEventListener("click", () => {
           if (state.locked) return;
-          playColorAudio(button.dataset.answer);
+          playOnceFromButton(button, button.dataset.answer);
           const correct = button.dataset.answer === question.answer;
           if (correct) {
             button.classList.add("is-correct");
@@ -1101,6 +1136,7 @@
       state.score = 0;
       state.streak = 0;
       state.locked = false;
+      preloadColorAudio();
       updateVocab();
       renderQuestion();
     }
@@ -1120,7 +1156,14 @@
       if (!button) return;
       event.preventDefault();
       event.stopPropagation();
-      playColorAudio(button.dataset.sound);
+      if (button.disabled) return;
+      playOnceFromButton(button, button.dataset.sound);
+    });
+
+    document.addEventListener("pointerdown", (event) => {
+      const button = event.target.closest("[data-sound]");
+      if (!button || button.disabled) return;
+      playOnceFromButton(button, button.dataset.sound);
     });
 
     nextBtn.addEventListener("click", () => {
