@@ -117,7 +117,7 @@
 
     .mode {
       display: inline-grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       border: 2px solid var(--ink);
       background: var(--surface);
       box-shadow: 4px 4px 0 var(--ink);
@@ -125,7 +125,7 @@
 
     .mode button {
       border: 0;
-      min-width: 82px;
+      min-width: 72px;
       padding: 10px 12px;
       background: transparent;
       color: var(--ink);
@@ -346,6 +346,121 @@
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
+    }
+
+    .listen-area {
+      display: grid;
+      gap: 18px;
+    }
+
+    .listen-button {
+      min-height: 92px;
+      padding: 16px;
+      border: 2px solid var(--ink);
+      background: #fff1c2;
+      color: var(--ink);
+      box-shadow: 5px 5px 0 rgba(37, 33, 29, 0.95);
+      display: grid;
+      grid-template-columns: 58px 1fr;
+      gap: 14px;
+      align-items: center;
+      text-align: left;
+      transition: transform 130ms ease, box-shadow 130ms ease, background 130ms ease;
+    }
+
+    .listen-button:hover,
+    .listen-button:focus-visible {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0 rgba(37, 33, 29, 0.95);
+      outline: 3px solid rgba(47, 104, 184, 0.28);
+      outline-offset: 2px;
+    }
+
+    .play-mark {
+      width: 58px;
+      height: 58px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--ink);
+      background: var(--red);
+      color: #fff8ec;
+      font-size: 28px;
+      font-weight: 950;
+      line-height: 1;
+      box-shadow: inset 0 0 0 6px rgba(255, 255, 255, 0.22);
+    }
+
+    .listen-button strong {
+      display: block;
+      font-size: 28px;
+      line-height: 1;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .listen-button span span {
+      display: block;
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 850;
+    }
+
+    .picture-choices {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(130px, 1fr));
+      gap: 14px;
+    }
+
+    .picture-card {
+      min-height: 214px;
+      padding: 14px;
+      border: 2px solid var(--ink);
+      background: #fff8ec;
+      color: var(--ink);
+      box-shadow: 5px 5px 0 rgba(37, 33, 29, 0.95);
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 10px;
+      text-align: center;
+      transition: transform 130ms ease, box-shadow 130ms ease, background 130ms ease;
+    }
+
+    .picture-card:hover,
+    .picture-card:focus-visible {
+      transform: translate(-2px, -2px);
+      box-shadow: 7px 7px 0 rgba(37, 33, 29, 0.95);
+      outline: 3px solid rgba(47, 104, 184, 0.28);
+      outline-offset: 2px;
+    }
+
+    .picture-card.is-correct {
+      background: #e4f5dd;
+    }
+
+    .picture-card.is-wrong {
+      background: #ffe0da;
+    }
+
+    .picture-card .flower {
+      width: min(82%, 142px);
+    }
+
+    .picture-caption strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 950;
+      white-space: nowrap;
+    }
+
+    .picture-caption span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 850;
     }
 
     .choice {
@@ -670,6 +785,15 @@
         grid-template-columns: 1fr;
       }
 
+      .listen-button {
+        grid-template-columns: 52px 1fr;
+      }
+
+      .play-mark {
+        width: 52px;
+        height: 52px;
+      }
+
       .stage-footer {
         grid-template-columns: 1fr;
       }
@@ -700,7 +824,8 @@
       </div>
       <div class="status" aria-label="遊戲狀態">
         <div class="mode" aria-label="模式">
-          <button type="button" data-mode="basic" aria-pressed="true">入門</button>
+          <button type="button" data-mode="listen" aria-pressed="true">hana 聽圖</button>
+          <button type="button" data-mode="basic" aria-pressed="false">入門</button>
           <button type="button" data-mode="challenge" aria-pressed="false">挑戰</button>
         </div>
         <div class="pill" id="scoreBox">0 分</div>
@@ -715,7 +840,7 @@
         </div>
         <div class="question" id="gameStage"></div>
         <footer class="stage-footer">
-          <div class="feedback" id="feedback">先看族語，再看中文提示。</div>
+          <div class="feedback" id="feedback">先聽族語，再找圖卡。</div>
           <div class="actions">
             <button class="action" type="button" id="resetBtn">重新開始</button>
             <button class="action primary" type="button" id="nextBtn">下一題</button>
@@ -785,6 +910,7 @@
       }
     ];
 
+    const listenKeys = ["kahengangay", "kaliyalaway", "kandaway"];
     const basicKeys = ["kahengangay", "kaliyalaway"];
     const flowerPhrases = [
       {
@@ -802,7 +928,7 @@
     ];
 
     const state = {
-      mode: "basic",
+      mode: "listen",
       questions: [],
       index: 0,
       score: 0,
@@ -831,7 +957,26 @@
       return copy;
     }
 
+    function buildListenChoices(answerKey) {
+      const distractor = shuffle(listenKeys.filter((key) => key !== answerKey))[0];
+      return shuffle([answerKey, distractor]);
+    }
+
+    function buildListenQuestions() {
+      return shuffle([...listenKeys, ...listenKeys]).map((key) => ({
+        type: "listenPicture",
+        answer: key,
+        title: "hana",
+        sub: "聽族語，找顏色圖卡",
+        choices: buildListenChoices(key)
+      }));
+    }
+
     function buildQuestions(mode) {
+      if (mode === "listen") {
+        return buildListenQuestions();
+      }
+
       const activeKeys = mode === "basic" ? basicKeys : colors.map((item) => item.key);
       const activeColors = activeKeys.map(byKey);
       const colorPick = activeColors.map((item) => ({
@@ -886,7 +1031,7 @@
     }
 
     function updateVocab() {
-      const active = state.mode === "basic" ? colors.slice(0, 2) : colors;
+      const active = state.mode === "listen" ? listenKeys.map(byKey) : (state.mode === "basic" ? colors.slice(0, 2) : colors);
       vocabList.innerHTML = active.map((item) => `
         <div class="mini-card">
           <span class="swatch" style="--swatch:${item.hex}" aria-hidden="true"></span>
@@ -981,6 +1126,32 @@
       `;
     }
 
+    function renderListenPicture(question) {
+      const choices = question.choices.map(byKey);
+      return `
+        <div class="listen-area">
+          <button class="listen-button" type="button" data-listen="${question.answer}">
+            <span class="play-mark" aria-hidden="true">▶</span>
+            <span>
+              <strong>hana</strong>
+              <span>聽一聽｜找圖卡</span>
+            </span>
+          </button>
+          <div class="picture-choices">
+            ${choices.map((item) => `
+              <button class="picture-card" type="button" data-answer="${item.key}" aria-label="${item.zh} hana 圖卡">
+                ${flowerMarkup(item.key)}
+                <span class="picture-caption">
+                  <strong>hana</strong>
+                  <span>${item.zh} 圖卡</span>
+                </span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `;
+    }
+
     function renderChoices(question) {
       const choices = question.choices.map(byKey);
       return `
@@ -1021,6 +1192,25 @@
       state.locked = false;
       state.spellPicked = [];
       const question = state.questions[state.index];
+      if (question.type === "listenPicture") {
+        stage.innerHTML = `
+          <div class="roundline">
+            <span>hana 聽圖</span>
+            <span>第 ${state.index + 1} 題</span>
+          </div>
+          <h2 class="prompt">
+            hana
+            <small>${question.sub}</small>
+          </h2>
+          ${renderListenPicture(question)}
+        `;
+
+        setFeedback("按播放聽族語，再點一樣顏色的 hana 圖卡。");
+        bindQuestion(question);
+        updateStatus();
+        return;
+      }
+
       const isFlower = question.type === "pickFlower";
       const previewColor = question.type === "pickWord" ? question.answer : (isFlower ? question.answer : null);
       const visualKey = previewColor || question.color || (byKey(question.answer) ? question.answer : "kahengangay");
@@ -1051,6 +1241,35 @@
     }
 
     function bindQuestion(question) {
+      if (question.type === "listenPicture") {
+        const listenButton = stage.querySelector("[data-listen]");
+        listenButton.addEventListener("pointerdown", () => {
+          if (state.locked) return;
+          playOnceFromButton(listenButton, question.answer);
+        });
+        listenButton.addEventListener("click", () => {
+          if (state.locked) return;
+          playOnceFromButton(listenButton, question.answer);
+        });
+
+        stage.querySelectorAll(".picture-card").forEach((button) => {
+          button.addEventListener("click", () => {
+            if (state.locked) return;
+            const correct = button.dataset.answer === question.answer;
+            if (correct) {
+              button.classList.add("is-correct");
+              markCorrect(null);
+            } else {
+              button.classList.add("is-wrong");
+              state.streak = 0;
+              setFeedback("再聽一次，找一樣顏色的 hana 圖卡。", "warn");
+              playColorAudio(question.answer);
+            }
+          });
+        });
+        return;
+      }
+
       if (question.type === "spell") {
         stage.querySelectorAll(".chunk").forEach((button) => {
           button.addEventListener("click", () => {
@@ -1103,7 +1322,10 @@
       state.locked = true;
       state.streak += 1;
       state.score += 10 + Math.min(state.streak, 3) * 2;
-      setFeedback(state.streak >= 3 ? "連續答對，色彩密碼打開了！" : "答對了，先讀族語再到下一題。", "good");
+      const goodText = state.mode === "listen"
+        ? (state.streak >= 3 ? "連續答對，hana 圖卡都找到了！" : "答對了，找到一樣顏色的 hana。")
+        : (state.streak >= 3 ? "連續答對，色彩密碼打開了！" : "答對了，先讀族語再到下一題。");
+      setFeedback(goodText, "good");
       playColorAudio(audioKey);
       updateStatus();
       window.setTimeout(() => nextQuestion(), 900);
@@ -1117,12 +1339,13 @@
     }
 
     function renderComplete() {
+      const isListenMode = state.mode === "listen";
       progressBar.style.width = "100%";
       roundBox.textContent = `${state.questions.length} / ${state.questions.length}`;
       stage.innerHTML = `
         <div class="complete">
-          <h2>kahengangay a hana</h2>
-          <p>完成色彩密碼。最後大聲念：kahengangay a hana、kaliyalaway a hana。</p>
+          <h2>${isListenMode ? "hana" : "kahengangay a hana"}</h2>
+          <p>${isListenMode ? "完成 hana 聽圖。再聽一次顏色詞，找一樣顏色的花。" : "完成色彩密碼。最後大聲念：kahengangay a hana、kaliyalaway a hana。"}</p>
           <button class="action" type="button" id="playAgain">再玩一次</button>
         </div>
       `;
