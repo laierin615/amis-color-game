@@ -824,8 +824,8 @@
       </div>
       <div class="status" aria-label="遊戲狀態">
         <div class="mode" aria-label="模式">
-          <button type="button" data-mode="listen" aria-pressed="true">hana 聽圖</button>
-          <button type="button" data-mode="basic" aria-pressed="false">入門</button>
+          <button type="button" data-mode="basic" aria-pressed="true">入門</button>
+          <button type="button" data-mode="listen" aria-pressed="false">聽 hana</button>
           <button type="button" data-mode="challenge" aria-pressed="false">挑戰</button>
         </div>
         <div class="pill" id="scoreBox">0 分</div>
@@ -840,7 +840,7 @@
         </div>
         <div class="question" id="gameStage"></div>
         <footer class="stage-footer">
-          <div class="feedback" id="feedback">先聽族語，再找圖卡。</div>
+          <div class="feedback" id="feedback">先讀族語，再看中文提示。</div>
           <div class="actions">
             <button class="action" type="button" id="resetBtn">重新開始</button>
             <button class="action primary" type="button" id="nextBtn">下一題</button>
@@ -928,7 +928,7 @@
     ];
 
     const state = {
-      mode: "listen",
+      mode: "basic",
       questions: [],
       index: 0,
       score: 0,
