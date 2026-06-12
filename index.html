@@ -818,7 +818,7 @@
       <div class="brand">
         <div class="brand-mark" aria-hidden="true"></div>
         <div>
-          <h1>kehengangay · kaliyalaway</h1>
+          <h1>kahengangay · kaliyalaway</h1>
           <p>阿美族色彩密碼｜hana（花）</p>
         </div>
       </div>
@@ -849,7 +849,7 @@
       </section>
 
       <aside class="vocab" aria-label="色彩詞彙表">
-        <h2>kehengangay / kaliyalaway <small>課堂色彩詞</small></h2>
+        <h2>kahengangay / kaliyalaway <small>課堂色彩詞</small></h2>
         <div id="vocabList"></div>
         <figure class="lesson-image">
           <img src="assets/color-practice.png" alt="附件課堂色卡">
@@ -862,12 +862,12 @@
   <script>
     const colors = [
       {
-        key: "kehengangay",
+        key: "kahengangay",
         zh: "紅色",
         hex: "#d94638",
         meaning: "熱情、活力、生命力",
-        audio: "assets/audio/kehengangay.wav",
-        chunks: ["ke", "he", "nga", "ngay"]
+        audio: "assets/audio/kahengangay.wav",
+        chunks: ["ka", "he", "nga", "ngay"]
       },
       {
         key: "kaliyalaway",
@@ -910,14 +910,14 @@
       }
     ];
 
-    const listenKeys = ["kehengangay", "kaliyalaway", "kandaway"];
-    const basicKeys = ["kehengangay", "kaliyalaway"];
+    const listenKeys = ["kahengangay", "kaliyalaway", "kandaway"];
+    const basicKeys = ["kahengangay", "kaliyalaway"];
     const flowerPhrases = [
       {
-        phrase: "kehengangay a hana",
+        phrase: "kahengangay a hana",
         zh: "紅色的花",
-        color: "kehengangay",
-        chunks: ["kehengangay", "a", "hana"]
+        color: "kahengangay",
+        chunks: ["kahengangay", "a", "hana"]
       },
       {
         phrase: "kaliyalaway a hana",
@@ -1213,7 +1213,7 @@
 
       const isFlower = question.type === "pickFlower";
       const previewColor = question.type === "pickWord" ? question.answer : (isFlower ? question.answer : null);
-      const visualKey = previewColor || question.color || (byKey(question.answer) ? question.answer : "kehengangay");
+      const visualKey = previewColor || question.color || (byKey(question.answer) ? question.answer : "kahengangay");
       const visual = question.type === "pickColor" ? mysteryMarkup(question.answer) : flowerMarkup(visualKey);
 
       stage.innerHTML = `
@@ -1344,8 +1344,8 @@
       roundBox.textContent = `${state.questions.length} / ${state.questions.length}`;
       stage.innerHTML = `
         <div class="complete">
-          <h2>${isListenMode ? "hana" : "kehengangay a hana"}</h2>
-          <p>${isListenMode ? "完成 hana 聽圖。再聽一次顏色詞，找一樣顏色的花。" : "完成色彩密碼。最後大聲念：kehengangay a hana、kaliyalaway a hana。"}</p>
+          <h2>${isListenMode ? "hana" : "kahengangay a hana"}</h2>
+          <p>${isListenMode ? "完成 hana 聽圖。再聽一次顏色詞，找一樣顏色的花。" : "完成色彩密碼。最後大聲念：kahengangay a hana、kaliyalaway a hana。"}</p>
           <button class="action" type="button" id="playAgain">再玩一次</button>
         </div>
       `;
